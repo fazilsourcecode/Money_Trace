@@ -25,6 +25,7 @@ import { clockTime, money, timeAgo } from '@/lib/format'
 import { logout, useOrders, useSession } from '@/lib/hooks'
 import { applyRefund, resolveOrder } from '@/lib/store'
 import type { Order } from '@/lib/types'
+import { assistantAnswer, evaluation, evaluationQuestions } from '@/lib/evaluation'
 
 type Tab = 'Overview' | 'Transactions' | 'Reconciliation' | 'Exceptions' | 'Audit'
 const TABS: Tab[] = ['Overview', 'Transactions', 'Reconciliation', 'Exceptions', 'Audit']
@@ -39,6 +40,9 @@ export default function MerchantPage() {
   const [tab, setTab] = useState<Tab>('Overview')
   const [openId, setOpenId] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [assistantOpen, setAssistantOpen] = useState(false)
+  const [assistantText, setAssistantText] = useState('')
+  const [assistantReply, setAssistantReply] = useState('')
 
   useEffect(() => {
     if (session === null) router.replace('/')
@@ -84,9 +88,21 @@ export default function MerchantPage() {
           </div>
           <div className="header-actions">
             <span className="sync"><span className="live-pulse" /> Live · synced {orders.length ? timeAgo(orders[0].createdAt) : 'now'}</span>
+            <button className="assistant-trigger" onClick={() => setAssistantOpen((open) => !open)}><Route /> Trace Assistant</button>
           </div>
         </header>
 
+        {assistantOpen && (
+          <section className="assistant-panel">
+            <div><span className="section-kicker">BOUNDED COPILOT</span><h3>Trace Assistant</h3><p>Evidence-first answers. Every recommended action still needs human approval.</p></div>
+            <div className="assistant-questions">{evaluationQuestions.map((question) => <button key={question} onClick={() => setAssistantReply(assistantAnswer(question))}>{question}</button>)}</div>
+            <form className="assistant-form" onSubmit={(event) => { event.preventDefault(); setAssistantReply(assistantAnswer(assistantText)); setAssistantText('') }}>
+              <input value={assistantText} onChange={(event) => setAssistantText(event.target.value)} placeholder="Ask about the close…" aria-label="Ask Trace Assistant" />
+              <button className="primary-btn" type="submit">Ask</button>
+            </form>
+            {assistantReply && <div className="assistant-reply"><strong>Controller analysis</strong><p>{assistantReply}</p></div>}
+          </section>
+        )}
         {open ? (
           <TraceDetail order={open} onBack={() => setOpenId(null)} />
         ) : tab === 'Overview' ? (
@@ -145,6 +161,14 @@ function Overview({ orders, onOpen, goto }: { orders: Order[]; onOpen: (id: stri
         <Metric label="Awaiting bank" value={String(m.awaiting)} detail="settlement pending" tone="blue" />
         <Metric label="Unexplained" value={money(m.unexplained)} detail={m.unexplained ? 'needs an answer' : 'all explained'} tone={m.unexplained ? 'amber' : 'green'} />
       </div>
+
+      <section className="evaluation-strip">
+        <div><span className="section-kicker">LATEST CONTROL RUN</span><h3>Batch reconciliation evaluation</h3><p>Deterministic 120-record replay across six payment failure modes.</p></div>
+        <div className="eval-stat"><strong>{evaluation.processed}</strong><span>processed</span></div>
+        <div className="eval-stat"><strong>{evaluation.matchRate}%</strong><span>auto-matched</span></div>
+        <div className="eval-stat"><strong>₹{evaluation.amountAtRisk.toLocaleString('en-IN')}</strong><span>at risk</span></div>
+        <button className="ghost-btn" onClick={() => goto('Reconciliation')}>Open run <ArrowRight /></button>
+      </section>
 
       <div className="ov-grid">
         <section className="panel">
