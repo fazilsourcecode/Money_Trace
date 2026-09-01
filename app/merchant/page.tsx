@@ -25,7 +25,7 @@ import { clockTime, money, timeAgo } from '@/lib/format'
 import { logout, useOrders, useSession } from '@/lib/hooks'
 import { applyRefund, resolveOrder } from '@/lib/store'
 import type { Order } from '@/lib/types'
-import { assistantAnswer, evaluation, evaluationQuestions } from '@/lib/evaluation'
+import { assistantAnswer, batchRecords, evaluation, evaluationQuestions } from '@/lib/evaluation'
 
 type Tab = 'Overview' | 'Transactions' | 'Reconciliation' | 'Exceptions' | 'Audit'
 const TABS: Tab[] = ['Overview', 'Transactions', 'Reconciliation', 'Exceptions', 'Audit']
@@ -106,7 +106,7 @@ export default function MerchantPage() {
         {open ? (
           <TraceDetail order={open} onBack={() => setOpenId(null)} />
         ) : tab === 'Overview' ? (
-          <Overview orders={orders} onOpen={setOpenId} goto={goto} />
+          <RunConsole goto={goto} onOpen={setOpenId} />
         ) : tab === 'Transactions' ? (
           <Transactions orders={orders} onOpen={setOpenId} />
         ) : tab === 'Reconciliation' ? (
@@ -135,6 +135,30 @@ function useMetrics(orders: Order[]) {
 
 function Metric({ label, value, detail, tone }: { label: string; value: string; detail: string; tone?: string }) {
   return <div className={`metric ${tone ? `metric-${tone}` : ''}`}><span>{label}</span><strong>{value}</strong><small>{detail}</small></div>
+}
+
+function RunConsole({ goto, onOpen }: { goto: (t: Tab) => void; onOpen: (id: string) => void }) {
+  const [running, setRunning] = useState(false)
+  const [cursor, setCursor] = useState(0)
+  const visible = batchRecords.slice(Math.max(0, cursor - 7), cursor)
+  const current = batchRecords[Math.min(cursor, batchRecords.length - 1)]
+  useEffect(() => {
+    if (!running) return
+    const timer = window.setInterval(() => setCursor((value) => value >= batchRecords.length ? value : value + 1), 90)
+    return () => window.clearInterval(timer)
+  }, [running])
+  useEffect(() => { if (cursor >= batchRecords.length) setRunning(false) }, [cursor])
+  const matched = batchRecords.slice(0, cursor).filter((record) => record.outcome === 'matched').length
+  const flagged = batchRecords.slice(0, cursor).filter((record) => record.outcome === 'flagged').length
+  const unresolved = batchRecords.slice(0, cursor).filter((record) => record.outcome === 'unresolved').length
+  const risk = batchRecords.slice(0, cursor).filter((record) => record.outcome !== 'matched').reduce((sum, record) => sum + record.amount, 0)
+  const start = () => { setCursor(0); setRunning(true) }
+  return <div className="run-console">
+    <div className="run-intro"><div><span className="run-kicker">TRACK 04 · AI FINANCE CONTROLLER</span><h2>Close the books.<br /><em>Know why.</em></h2><p>Run a 120-record reconciliation batch across payments, settlements and bank credits. Every decision is explainable. Every exception stays visible.</p></div><div className="run-cta"><span className={`run-status ${running ? 'is-running' : cursor === 120 ? 'is-done' : ''}`}><i /> {running ? 'RUNNING CONTROL' : cursor === 120 ? 'RUN COMPLETE' : 'READY TO RUN'}</span><button className="run-button" onClick={start}>{running ? 'Processing batch…' : cursor === 120 ? 'Run again' : 'Run reconciliation'} <ArrowRight /></button><small>Synthetic evaluation data · six failure modes</small></div></div>
+    <div className="run-progress"><div><span>BATCH {String(Math.min(cursor, 120)).padStart(3, '0')} / 120</span><b>{cursor ? `${Math.round((cursor / 120) * 100)}%` : 'Awaiting start'}</b></div><div className="progress-track"><i style={{ width: `${(cursor / 120) * 100}%` }} /></div></div>
+    <div className="run-grid"><section className="run-feed"><div className="run-section-head"><div><span className="run-kicker">LIVE DECISION STREAM</span><h3>{running ? `Processing ${current?.id ?? 'batch'}…` : cursor === 120 ? 'Control run complete' : 'Records will appear here'}</h3></div><span className="stream-dot"><i /> event stream</span></div>{visible.length === 0 ? <div className="empty-run"><Route /><strong>One control run. Four sources. Zero black boxes.</strong><p>Start the run to watch MoneyTrace normalize, match and escalate records in sequence.</p></div> : visible.slice().reverse().map((record) => <button className="run-record" key={record.id} onClick={() => goto('Exceptions')}><span className={`record-mark ${record.outcome}`}><Check /></span><span className="record-main"><strong>{record.id}</strong><small>{record.source} · {record.evidence}</small></span><span className="record-amount">₹{record.amount.toLocaleString('en-IN')}</span><span className={`record-outcome ${record.outcome}`}>{record.outcome === 'matched' ? 'MATCHED' : record.outcome === 'flagged' ? 'FLAGGED' : 'UNRESOLVED'}</span><ChevronRight /></button>)}</section><aside className="run-summary"><span className="run-kicker">CONTROL RESULT</span><h3>{cursor === 120 ? 'Ready to close' : 'Awaiting control run'}</h3><div className="result-ring"><strong>{cursor ? Math.round((matched / cursor) * 100) : 0}<small>%</small></strong><span>match rate</span></div><dl><div><dt>Processed</dt><dd>{cursor} <small>/ 120</small></dd></div><div><dt>Auto-matched</dt><dd className="green">{matched}</dd></div><div><dt>Needs review</dt><dd className="amber">{flagged}</dd></div><div><dt>Unresolved</dt><dd className="red">{unresolved}</dd></div><div><dt>Amount at risk</dt><dd>₹{risk.toLocaleString('en-IN')}</dd></div></dl><button className="summary-link" onClick={() => goto('Exceptions')}>View honest exception list <ArrowRight /></button></aside></div>
+    <div className="run-footer"><span><b>WHAT THE CONTROLLER PROVES</b> Not just a green check — a measured close with evidence, confidence and an honest exception list.</span><button onClick={() => goto('Audit')}>View audit trail <ArrowRight /></button></div>
+  </div>
 }
 
 function Overview({ orders, onOpen, goto }: { orders: Order[]; onOpen: (id: string) => void; goto: (t: Tab) => void }) {

@@ -72,4 +72,29 @@ export function assistantAnswer(question: string, result = evaluation) {
   return 'I can explain match rate, amount at risk, refund impact, or the evidence behind the current exception queue.'
 }
 
+export type BatchRecord = {
+  id: string
+  source: string
+  amount: number
+  outcome: 'matched' | 'flagged' | 'unresolved'
+  confidence: number
+  evidence: string
+  action: string
+}
+
+export const batchRecords: BatchRecord[] = Array.from({ length: 120 }, (_, index) => {
+  const n = index + 1
+  const unresolved = n % 41 === 0
+  const flagged = n % 17 === 0 || n % 29 === 0
+  return {
+    id: `pay_${String(n).padStart(4, '0')}`,
+    source: n % 3 === 0 ? 'Razorpay settlement' : n % 2 === 0 ? 'Bank statement' : 'Payment webhook',
+    amount: 850 + ((n * 137) % 6800),
+    outcome: unresolved ? 'unresolved' : flagged ? 'flagged' : 'matched',
+    confidence: unresolved ? 58 : flagged ? 76 : 96,
+    evidence: unresolved ? 'Bank credit reference missing' : flagged ? 'Timing or amount variance detected' : 'Payment, settlement and bank reference aligned',
+    action: unresolved ? 'Request bank evidence' : flagged ? 'Review exception' : 'Auto-reconciled',
+  }
+})
+
 export const evaluationQuestions = ['Why is today’s match rate lower?', 'What money is at risk?', 'Explain refund impact']
