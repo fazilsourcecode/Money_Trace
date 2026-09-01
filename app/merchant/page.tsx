@@ -25,7 +25,7 @@ import { clockTime, money, timeAgo } from '@/lib/format'
 import { logout, useOrders, useSession } from '@/lib/hooks'
 import { applyRefund, resolveOrder } from '@/lib/store'
 import type { Order } from '@/lib/types'
-import { assistantAnswer, evaluation, evaluationQuestions } from '@/lib/evaluation'
+import { assistantAnswer, buildEvaluationBatch, evaluateBatch, evaluation, evaluationQuestions } from '@/lib/evaluation'
 
 type Tab = 'Overview' | 'Transactions' | 'Reconciliation' | 'Exceptions' | 'Audit'
 const TABS: Tab[] = ['Overview', 'Transactions', 'Reconciliation', 'Exceptions', 'Audit']
@@ -241,24 +241,29 @@ function Transactions({ orders, onOpen }: { orders: Order[]; onOpen: (id: string
 }
 
 function Reconciliation({ orders, onOpen }: { orders: Order[]; onOpen: (id: string) => void }) {
-  const featured = orders.find(isReview) ?? orders.find((o) => o.reconciliation.state === 'AWAITING_BANK') ?? orders[0]
-  if (!featured) return <div className="pad"><div className="all-clear big"><Check /> Nothing to reconcile yet.</div></div>
-  return (
-    <div className="pad">
-      <div className="page-intro"><div><span className="section-kicker">EVIDENCE-DRIVEN CONTROL</span><h2>Reconciliation</h2><p>Follow the money from payment to bank credit. Explain every difference.</p></div><Badge tone={stateTone(featured.reconciliation.state)}>{stateLabel(featured.reconciliation.state)}</Badge></div>
-
-      <TraceCard order={featured} onOpen={() => onOpen(featured.id)} />
-
-      <section className="batch">
-        <div><span className="section-kicker">RELATIONSHIP MATCHING</span><h3>Batched settlement recognised</h3><p>MoneyTrace matches one-to-many relationships, not just exact rows.</p></div>
-        <div className="batch-flow">
-          <span>Order A <b>₹4,000</b></span><span>Order B <b>₹3,000</b></span><span>Order C <b>₹5,000</b></span>
-          <ArrowRight /><strong>Settlement<br />₹12,000</strong><ArrowRight /><strong>Bank credit<br />₹12,000</strong>
-        </div>
-        <Badge tone="green">3 ↔ 1 ↔ 1 MATCHED</Badge>
-      </section>
-    </div>
-  )
+  const [filter, setFilter] = useState<'all' | 'matched' | 'review' | 'unresolved'>('all')
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [selected, setSelected] = useState<Order | null>(null)
+  const batch = useMemo(() => buildEvaluationBatch(120), [])
+  const result = useMemo(() => evaluateBatch(batch), [batch])
+  const filtered = batch.filter((order) => {
+    const matchesFilter = filter === 'all' || filter === 'matched' ? (filter === 'all' || order.reconciliation.state === 'RECONCILED') : filter === 'unresolved' ? order.reconciliation.state === 'EXCEPTION' : order.reconciliation.state !== 'RECONCILED'
+    return matchesFilter && `${order.ref} ${order.customerName} ${order.payment.paymentId}`.toLowerCase().includes(query.toLowerCase())
+  })
+  const pageSize = 12
+  const pages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const rows = filtered.slice((page - 1) * pageSize, page * pageSize)
+  const status = (order: Order) => order.reconciliation.state === 'RECONCILED' ? 'MATCHED' : order.reconciliation.state === 'EXCEPTION' ? 'UNRESOLVED' : 'NEEDS REVIEW'
+  const tone = (order: Order) => order.reconciliation.state === 'RECONCILED' ? 'matched' : order.reconciliation.state === 'EXCEPTION' ? 'unresolved' : 'review'
+  return <div className="pad reconciliation-workspace">
+    <div className="page-intro"><div><span className="section-kicker">TRACK 04 · AI FINANCE CONTROLLER</span><h2>Reconciliation run</h2><p>Every record gets a decision. Every decision gets evidence.</p></div><Badge tone="blue">SYNTHETIC BATCH · 120 RECORDS</Badge></div>
+    <section className="recon-run-summary"><div><span className="section-kicker">CONTROL RUN COMPLETE</span><h3>Batch close · 01 Sep 2026</h3><p>Six failure modes replayed across payments, settlements and bank credits.</p></div><Metric label="Processed" value={String(result.processed)} detail="records inspected" /><Metric label="Matched" value={`${result.matchRate}%`} detail={`${result.matched} auto-resolved`} tone="green" /><Metric label="Review" value={String(result.review)} detail="human decision needed" tone="amber" /><Metric label="At risk" value={money(result.amountAtRisk)} detail={`${result.unresolved} unresolved`} tone="red" /></section>
+    <div className="recon-toolbar"><div className="recon-tabs">{(['all', 'matched', 'review', 'unresolved'] as const).map((key) => <button key={key} className={filter === key ? 'active' : ''} onClick={() => { setFilter(key); setPage(1) }}>{key === 'all' ? `All ${batch.length}` : key === 'matched' ? `Matched ${result.matched}` : key === 'review' ? `Review ${result.review - result.unresolved}` : `Unresolved ${result.unresolved}`}</button>)}</div><label className="recon-search"><Search /><input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="Search record, customer or payment ID" /></label></div>
+    <section className="recon-table"><div className="recon-table-head"><span>Record / source</span><span>Money trail</span><span>Decision evidence</span><span>Confidence</span><span>Result</span></div>{rows.map((order) => <button className="recon-row" key={order.id} onClick={() => setSelected(order)}><div><strong>{order.ref}</strong><small>{order.customerName} · {order.payment.methodLabel}</small></div><div><strong>{money(order.amount)}</strong><small>Payment → settlement → bank</small></div><div><strong>{order.reconciliation.reason}</strong><small>{order.reconciliation.state === 'RECONCILED' ? 'IDs and net amount aligned' : order.exceptions[0]?.title ?? 'Manual evidence required'}</small></div><div className="confidence-cell"><strong>{order.reconciliation.confidence}%</strong><i><b style={{ width: `${order.reconciliation.confidence}%` }} /></i></div><span className={`recon-status ${tone(order)}`}>{status(order)} <ChevronRight /></span></button>)}</section>
+    <div className="recon-pagination"><span>Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filtered.length)} of {filtered.length} records</span><div><button disabled={page === 1} onClick={() => setPage((value) => value - 1)}>Previous</button><b>{page} / {pages}</b><button disabled={page === pages} onClick={() => setPage((value) => value + 1)}>Next</button></div></div>
+    {selected && <div className="record-inspector" role="dialog" aria-label={`Details for ${selected.ref}`}><button className="inspector-close" onClick={() => setSelected(null)}><X /></button><span className="section-kicker">RECORD INSPECTOR · {selected.ref}</span><h3>{selected.customerName}</h3><div className={`inspector-result ${tone(selected)}`}><strong>{status(selected)}</strong><span>{selected.reconciliation.confidence}% confidence</span></div><div className="inspector-amount">{money(selected.amount)}<small>gross payment amount</small></div><div className="evidence-chain"><div><span>01</span><strong>Payment captured</strong><small>{selected.payment.paymentId}</small></div><div><span>02</span><strong>Settlement evaluated</strong><small>Net {money(selected.settlement.net)} · fee {money(selected.settlement.fee)}</small></div><div><span>03</span><strong>Bank credit checked</strong><small>{selected.reconciliation.reason}</small></div></div><section className="inspector-explanation"><span className="section-kicker">CONTROLLER EXPLANATION</span><p>{selected.reconciliation.state === 'RECONCILED' ? 'Payment, settlement and bank evidence align within the expected tolerance. This record is safe to auto-resolve.' : `This record cannot be closed automatically. ${selected.reconciliation.reason} Review the linked evidence before approving a resolution.`}</p></section><button className="primary-btn" onClick={() => { onOpen(selected.id); setSelected(null) }}>Open full transaction trace <ArrowRight /></button></div>}
+  </div>
 }
 
 function TraceCard({ order, onOpen }: { order: Order; onOpen: () => void }) {
