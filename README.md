@@ -1,4 +1,4 @@
-<div align="center">
+i mean it still looks like a normal dashboad in merchant side so make it like <div align="center">
 
 # MoneyTrace Controller
 
