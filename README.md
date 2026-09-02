@@ -11,7 +11,7 @@
 [![Payments](https://img.shields.io/badge/Razorpay-Test%20Mode-0B4FFF)](#payments--security)
 [![Status](https://img.shields.io/badge/Status-Demo--ready-brightgreen)]()
 
-[Live Demo](#-run-it-locally) · [Demo Video](#-demo-video) · [Architecture](#-architecture) ·[Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
+[Live Demo](#live-demo) · [Demo Video](#demo-video) · [Architecture](#architecture)  ·[Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
 
 </div>
 
@@ -247,6 +247,31 @@ Razorpay's own **Agent Studio** and **Agentic Payments** platform (launched Marc
 
 ---
 
+## Live Demo
+
+Try the deployed MoneyTrace application:
+
+**[Open MoneyTrace →](https://money-trace-n9al.vercel.app/)**
+
+### Demo accounts
+
+| Role | Email | Password |
+|---|---|---|
+| Shopper | `shopper@aria.store` | `shop123` |
+| Merchant | `ops@ariacommerce.in` | `merchant123` |
+
+### Suggested demo flow
+
+1. Open the **Live Demo** and sign in as **Shopper**.
+2. Set a budget and product requirements.
+3. Run Aria and select a Test Lab scenario.
+4. Complete the payment using Razorpay Test Mode.
+5. Open **Orders** and view the payment lifecycle.
+6. Sign out and enter the **Merchant Console**.
+7. Open the same order and view capture → settlement → bank credit → reconciliation.
+8. Try a Test Lab failure scenario to see how the console explains the discrepancy.
+
+
 ## 🚀 Run it locally
 
 ```bash
@@ -254,18 +279,6 @@ npm install
 npm run dev
 # open http://localhost:3000
 ```
-
-**Demo credentials** (pre-filled):
-
-| Role | Email | Password |
-|---|---|---|
-| Shopper | `shopper@aria.store` | `shop123` |
-| Merchant | `ops@ariacommerce.in` | `merchant123` |
-
-**Demo flow:**
-1. Sign in as **Shopper** → set budget/must-haves → pick a Test Lab scenario → run the agent → pay hands-free.
-2. Open **Orders** to watch the payment's journey.
-3. Sign out, sign in as **Merchant** → the order is already there → trace it, see why it reconciled (or didn't), take action.
 
 ---
 
