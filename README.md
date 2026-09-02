@@ -66,8 +66,8 @@ Both sides share **one ledger**. An order Aria places shows up live in the merch
 
 **Aria Storefront — Hands-free checkout**
 <br>
-<img src="docs/screenshots/aria-checkout.png" alt="Aria checkout with coin animation" width="100%">
-<sub>Live coin animation over a real Razorpay test payment</sub>
+<img src="docs/screenshots/aria-checkout.png" alt="Aria checkout with Real Razorpay payment" width="100%">
+<sub> Real Razorpay test payment</sub>
 
 </td>
 </tr>
