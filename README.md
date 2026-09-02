@@ -25,7 +25,6 @@ Money moves through a payment stack in stages — **capture → settlement → b
 - **Customers/agents** buying on their behalf have no visibility into why a payment succeeded, failed, or was retried.
 - **Support teams** re-investigate the same discrepancy from scratch every time because there's no persistent, explainable audit trail.
 
-Reconciliation and post-payment operations are still, largely, done by hand — and the two sides of the same transaction (the person who paid, and the business that got paid) never see the same story.
 
 ## 💡 The solution
 
@@ -91,7 +90,6 @@ Both sides share **one ledger**. An order Aria places shows up live in the merch
 </tr>
 </table>
 
-> Add real PNGs/GIFs to `docs/screenshots/` before submitting — judges skim repos far more than they run them, so this section carries real weight.
 
 ---
 
@@ -143,7 +141,7 @@ flowchart TB
 **Core logic:**
 - `lib/agent.ts` — Aria's decision engine: candidate search, scoring against budget/must-haves, and the rejection-explanation generator.
 - `lib/scenarios.ts` — the Test Lab's scenario definitions (clean payment, refund-after-reconcile, partial capture, delayed bank, duplicate webhook, failed-then-retried) used to exercise the reconciliation engine against real failure modes.
-- Shared state lives in `localStorage` today (see [Known Limitations](#-known-limitations-and-roadmap)) so both experiences read/write the same order record without a backend.
+- Shared state lives in `localStorage` 
 
 ---
 
@@ -224,7 +222,6 @@ Razorpay's own **Agent Studio** and **Agentic Payments** platform (launched Marc
 | Explainability | Flags discrepancies | Flags discrepancies **with evidence, a confidence score, and an immutable audit trail** attached to every flag |
 | Agent transparency | Not demoed | Aria explains **why it rejected every non-chosen product**, not just why it picked the winner — the "explainability" mechanic is on the customer side too, not just the merchant side |
 
-In short: Razorpay proved the category works at production scale. MoneyTrace is a focused proof of the **paired, explainable, evidence-first mechanic** — built to be inspectable end-to-end by a judge in minutes, not a black box.
 
 ---
 
