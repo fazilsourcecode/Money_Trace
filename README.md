@@ -93,7 +93,7 @@ Both sides share **one ledger**. An order Aria places shows up live in the merch
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```mermaid
 flowchart TB
