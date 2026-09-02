@@ -37,14 +37,17 @@ Money moves through a payment stack in stages — **capture → settlement → b
 
 
 ---
-
-## 🎥 Demo video
-
-> 📹 **[Watch the 5-minute walkthrough →](#)** 
+## Demo Video
 
 <div align="center">
-  <a href="#"><img src="docs/screenshots/demo-thumbnail.png" alt="MoneyTrace demo video" width="600"></a>
-</div>
+
+<a href="https://www.loom.com/share/2a0b855cbfa9493cb44ded41b013ca2b">
+  <img src="docs/screenshots/demo-thumbnail.png"
+       alt="Watch MoneyTrace demo"
+       width="700">
+</a>
+
+<p><strong>▶ Watch the 5-minute MoneyTrace Demo</strong></p>
 
 ---
 
