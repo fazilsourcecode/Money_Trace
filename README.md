@@ -11,7 +11,7 @@
 [![Payments](https://img.shields.io/badge/Razorpay-Test%20Mode-0B4FFF)](#payments--security)
 [![Status](https://img.shields.io/badge/Status-Demo--ready-brightgreen)]()
 
-[Live Demo](#-run-it-locally) · [Demo Video](#-demo-video) · [Architecture](#-architecture) · [Metrics](#-metrics--evaluation) · [Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
+[Live Demo](#-run-it-locally) · [Demo Video](#-demo-video) · [Architecture](#-architecture) ·[Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
 
 </div>
 
@@ -149,6 +149,51 @@ flowchart TB
 
 ## 🔄 Flow of each side
 
+### Customer / agent flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as You
+    participant Agent as Shopping Agent
+    participant Cat as Aria Catalogue
+    participant RZP as Razorpay (test)
+    participant L as Shared Ledger
+
+    U->>Agent: "Wireless ANC, under ₹10,000, 4★+, ≤3 days"
+    Agent->>Cat: Search audio catalogue
+    Cat-->>Agent: Candidate products
+    Agent->>Agent: Check budget / rating / delivery / ANC
+    Agent-->>U: Rule out each miss with a reason
+    Agent->>U: Best match → Aria ANC Headphones ₹8,499
+    U->>RZP: Approve · pay (auto or real test modal)
+    RZP-->>L: Order + payment written
+    L-->>U: "Your order is on its way"
+```
+### Merchant / reconciliation flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant L as Shared Ledger
+    participant E as Reconciliation Engine
+    participant M as Merchant
+
+    L->>E: New payment captured (₹8,499)
+    E->>E: Detect settlement (₹8,298, fee ₹201)
+    E->>E: Match bank credit (HDFC · ₹8,298)
+    E->>E: Score relationship → 97% confidence
+
+    alt All evidence matches
+        E-->>M: RECONCILED · auto-resolved
+    else Gap / missing evidence
+        E-->>M: Exception → investigation queue
+    end
+
+    E->>E: Append immutable audit entry (reason + evidence + timestamp)
+    M->>M: Open trace → take action (refund / resolve)
+```
+
 ### 🛍️ Aria Storefront (Customer)
 
 1. **Sign in as Shopper** and describe what you want — edit the request, set a budget, rating threshold, delivery window, and any hard constraints (e.g. ANC).
@@ -183,22 +228,6 @@ In short: Razorpay proved the category works at production scale. MoneyTrace is 
 
 ---
 
-## 📊 Metrics & evaluation
-
-> Fill this in with real numbers from your own test runs before submitting — this section is what the buildathon judging criteria weighs most heavily ("measured accuracy," "honest exception list," "evidence that it creates value").
-
-| Metric | Result | Method |
-|---|---|---|
-| Reconciliation match rate | `__%` on a batch of `__` synthetic orders | Ran all 6 Test Lab scenarios × `__` runs each; measured auto-match vs. needs-review |
-| False-flag rate | `__%` | Clean-payment scenario run `__` times; counted incorrectly-flagged orders |
-| Discrepancy evidence accuracy | `__%` | Manually verified evidence shown matched the actual injected fault, across `__` flagged cases |
-| Aria rejection-reasoning soundness | `__ / __` reviewed manually as "correct reasoning" | Spot-checked `__` agent runs against budget/must-have constraints |
-| End-to-end checkout latency (Auto mode) | `__ s` avg | Measured from "Run agent" to order confirmation, `__` runs |
-| End-to-end checkout latency (Real Razorpay window) | `__ s` avg | Same, with real modal |
-
-**Honest exceptions:** *(list the cases your reconciliation engine could not resolve automatically, and what a human had to do — an honest "what doesn't work yet" list is explicitly rewarded by the judging bar.)*
-
----
 
 ## 🔐 Payments & security
 
