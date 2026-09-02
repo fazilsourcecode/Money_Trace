@@ -11,7 +11,7 @@
 [![Payments](https://img.shields.io/badge/Razorpay-Test%20Mode-0B4FFF)](#payments--security)
 [![Status](https://img.shields.io/badge/Status-Demo--ready-brightgreen)]()
 
-[Live Demo](#live-demo) · [Demo Video](#Demo-Video) · [Architecture](#architecture)  ·[Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
+[Live Demo](#live-demo) · [Demo Video](#-demo-video) · [Architecture](#architecture)  ·[Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
 
 </div>
 
@@ -37,17 +37,14 @@ Money moves through a payment stack in stages — **capture → settlement → b
 
 
 ---
-## Demo Video
+
+## 🎥 Demo video
+
+> 📹 **[Watch the 5-minute walkthrough →](https://www.loom.com/share/2a0b855cbfa9493cb44ded41b013ca2b)** 
 
 <div align="center">
-
-<a href="https://www.loom.com/share/2a0b855cbfa9493cb44ded41b013ca2b">
-  <img src="docs/screenshots/demo-thumbnail.png"
-       alt="Watch MoneyTrace demo"
-       width="700">
-</a>
-
-<p><strong>▶ Watch the 5-minute MoneyTrace Demo</strong></p>
+  <a href="https://www.loom.com/share/2a0b855cbfa9493cb44ded41b013ca2b"><img src="docs/screenshots/demo-thumbnail.png" alt="MoneyTrace demo video" width="600"></a>
+</div>
 
 ---
 
