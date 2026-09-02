@@ -35,13 +35,12 @@ Money moves through a payment stack in stages — **capture → settlement → b
 | 🛍️ **Aria Storefront** | Customer | An AI shopping agent that takes a budget + must-haves, searches, compares candidates, **explains why it rejected every product it didn't pick**, and pays hands-free via a real Razorpay test order. |
 | 🧭 **MoneyTrace Console** | Merchant | A financial control center that traces that *same* payment from capture → settlement → bank credit, auto-reconciles it, and surfaces exactly what needs human review — with evidence, a confidence score, and an immutable audit trail. |
 
-Both sides share **one ledger**. An order Aria places shows up live in the merchant console — so a judge (or a user) can watch one payment's full lifecycle from both perspectives in a single sitting.
 
 ---
 
 ## 🎥 Demo video
 
-> 📹 **[Watch the 5-minute walkthrough →](#)** *(replace with your unlisted YouTube/Loom link before submission)*
+> 📹 **[Watch the 5-minute walkthrough →](#)** 
 
 <div align="center">
   <a href="#"><img src="docs/screenshots/demo-thumbnail.png" alt="MoneyTrace demo video" width="600"></a>
@@ -223,7 +222,6 @@ sequenceDiagram
 
 ## 🆚 Why this isn't a clone of Razorpay's Agent Studio
 
-Razorpay's own **Agent Studio** and **Agentic Payments** platform (launched March–June 2026, built on Anthropic's Claude Agent SDK) already ship production agents for reconciliation, dispute response, cashflow forecasting, and conversational checkout. We built MoneyTrace *knowing that* — the goal wasn't to out-build a production fintech platform in a buildathon, it was to demonstrate the **specific mechanic** we think matters most and isn't the headline of their launch:
 
 | | Razorpay Agent Studio (production) | MoneyTrace (this demo) |
 |---|---|---|
