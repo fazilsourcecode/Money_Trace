@@ -11,7 +11,7 @@
 [![Payments](https://img.shields.io/badge/Razorpay-Test%20Mode-0B4FFF)](#payments--security)
 [![Status](https://img.shields.io/badge/Status-Demo--ready-brightgreen)]()
 
-[Live Demo](#live-demo) · [Demo Video](#-Demo-Video) · [Architecture](#architecture)  ·[Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
+[Live Demo](#live-demo) · [Demo Video](#Demo-Video) · [Architecture](#architecture)  ·[Uniqueness](#-why-this-isnt-a-clone-of-razorpays-agent-studio)
 
 </div>
 
