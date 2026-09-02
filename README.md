@@ -137,6 +137,17 @@ flowchart TB
     style Payments fill:#FFF7ED,stroke:#F97316
     style Ledger fill:#F5F5F5,stroke:#737373
 ```
+<div align="center">
+
+<a href="docs/architecture.svg">
+  <img
+    src="docs/architecture.svg"
+    alt="MoneyTrace architecture and payment lifecycle"
+    width="100%"
+  />
+</a>
+
+</div>
 
 **Core logic:**
 - `lib/agent.ts` — Aria's decision engine: candidate search, scoring against budget/must-haves, and the rejection-explanation generator.
